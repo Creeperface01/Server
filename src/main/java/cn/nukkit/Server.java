@@ -10,6 +10,7 @@ import cn.nukkit.event.server.PlayerDataSerializeEvent;
 import cn.nukkit.event.server.QueryRegenerateEvent;
 import cn.nukkit.event.server.RegistriesClosedEvent;
 import cn.nukkit.inventory.CraftingManager;
+import cn.nukkit.inventory.PlayerUI;
 import cn.nukkit.inventory.Recipe;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.enchantment.Enchantment;
@@ -543,6 +544,7 @@ public class Server {
         }
 
         EnumLevel.initLevels();
+        PlayerUI.init();
 
         if (this.getConfig("ticks-per.autosave", 6000) > 0) {
             this.autoSaveTicks = this.getConfig("ticks-per.autosave", 6000);

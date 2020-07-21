@@ -80,7 +80,7 @@ public class BlockEnchantingTable extends BlockTransparent {
                 BlockEntityRegistry.get().newEntity(ENCHANTING_TABLE, this.getChunk(), this.getPosition());
             }
 
-            player.addWindow(new EnchantInventory(player.getUIInventory(), this), ContainerIds.ENCHANTING_TABLE);
+            player.addWindow(new EnchantInventory(player, this), ContainerIds.ENCHANTING_TABLE);
         }
 
         return true;

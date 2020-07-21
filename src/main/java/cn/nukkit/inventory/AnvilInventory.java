@@ -10,8 +10,6 @@ import com.nukkitx.protocol.bedrock.data.SoundEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static cn.nukkit.block.BlockIds.AIR;
-
 /**
  * author: MagicDroidX
  * Nukkit Project
@@ -20,16 +18,15 @@ public class AnvilInventory extends FakeBlockUIComponent {
 
     public static final int TARGET = 0;
     public static final int SACRIFICE = 1;
-    public static final int RESULT = 50;
+    public static final int RESULT = 2;
 
-    public AnvilInventory(PlayerUIInventory playerUI, Block block) {
-        super(playerUI, InventoryType.ANVIL, 1, block);
+    public AnvilInventory(Player player, Block block) {
+        super(player, InventoryType.ANVIL, 1, block);
     }
 
-    public boolean onRename(Player player, Item resultItem) {
+    public boolean calculateResult(Player player, Item resultItem) {
         Item local = getItem(TARGET);
         Item second = getItem(SACRIFICE);
-
         if (!resultItem.equals(local, true, false) || resultItem.getCount() != local.getCount()) {
             //Item does not match target item. Everything must match except the tags.
             return false;
@@ -40,84 +37,76 @@ public class AnvilInventory extends FakeBlockUIComponent {
             return true;
         }
 
-        if (local.getId() != AIR && second.getId() == AIR) { //only rename
+        local.setRepairCost(0);
+
+        if (!local.isNull() && second.isNull()) { //only rename
             local.setCustomName(resultItem.getCustomName());
-            setItem(RESULT, local);
-            player.getInventory().addItem(local);
-            clearAll();
-            player.getInventory().sendContents(player);
-            sendContents(player);
+            setItem(RESULT, local, false);
 
             player.getLevel().addLevelSoundEvent(player.getPosition(), SoundEvent.RANDOM_ANVIL_USE);
             return true;
-        } else if (local.getId() != AIR && second.getId() != AIR) { //enchants combining
+        } else if (!local.isNull() && !second.isNull()) { //enchants combining
             if (!local.equals(second, true, false)) {
                 return false;
             }
 
-            if (local.getId() != AIR && second.getId() != AIR) {
-                Item result = local.clone();
-                int enchants = 0;
+            Item result = local.clone();
+            int enchants = 0;
 
-                ArrayList<Enchantment> enchantments = new ArrayList<>(Arrays.asList(second.getEnchantments()));
+            ArrayList<Enchantment> enchantments = new ArrayList<>(Arrays.asList(second.getEnchantments()));
 
-                ArrayList<Enchantment> baseEnchants = new ArrayList<>();
+            ArrayList<Enchantment> baseEnchants = new ArrayList<>();
 
-                for (Enchantment ench : local.getEnchantments()) {
-                    if (ench.isMajor()) {
-                        baseEnchants.add(ench);
-                    }
+            for (Enchantment ench : local.getEnchantments()) {
+                if (ench.isMajor()) {
+                    baseEnchants.add(ench);
                 }
-
-                for (Enchantment enchantment : enchantments) {
-                    if (enchantment.getLevel() < 0 || enchantment.getId() < 0) {
-                        continue;
-                    }
-
-                    if (enchantment.isMajor()) {
-                        boolean same = false;
-                        boolean another = false;
-
-                        for (Enchantment baseEnchant : baseEnchants) {
-                            if (baseEnchant.getId() == enchantment.getId())
-                                same = true;
-                            else {
-                                another = true;
-                            }
-                        }
-
-                        if (!same && another) {
-                            continue;
-                        }
-                    }
-
-                    Enchantment localEnchantment = local.getEnchantment(enchantment.getId());
-
-                    if (localEnchantment != null) {
-                        int level = Math.max(localEnchantment.getLevel(), enchantment.getLevel());
-
-                        if (localEnchantment.getLevel() == enchantment.getLevel())
-                            level++;
-
-                        enchantment.setLevel(level);
-                        result.addEnchantment(enchantment);
-                        continue;
-                    }
-
-                    result.addEnchantment(enchantment);
-                    enchants++;
-                }
-
-                result.setCustomName(resultItem.getCustomName());
-
-                player.getInventory().addItem(result);
-                player.getInventory().sendContents(player);
-                clearAll();
-                sendContents(player);
-
-                player.getLevel().addLevelSoundEvent(player.getPosition(), SoundEvent.RANDOM_ANVIL_USE);
-                return true;
             }
+
+            for (Enchantment enchantment : enchantments) {
+                if (enchantment.getLevel() < 0 || enchantment.getId() < 0) {
+                    continue;
+                }
+
+                if (enchantment.isMajor()) {
+                    boolean same = false;
+                    boolean another = false;
+
+                    for (Enchantment baseEnchant : baseEnchants) {
+                        if (baseEnchant.getId() == enchantment.getId())
+                            same = true;
+                        else {
+                            another = true;
+                        }
+                    }
+
+                    if (!same && another) {
+                        continue;
+                    }
+                }
+
+                Enchantment localEnchantment = local.getEnchantment(enchantment.getId());
+
+                if (localEnchantment != null) {
+                    int level = Math.max(localEnchantment.getLevel(), enchantment.getLevel());
+
+                    if (localEnchantment.getLevel() == enchantment.getLevel())
+                        level++;
+
+                    enchantment.setLevel(level);
+                    result.addEnchantment(enchantment);
+                    continue;
+                }
+
+                result.addEnchantment(enchantment);
+                enchants++;
+            }
+
+            result.setCustomName(resultItem.getCustomName());
+            setItem(RESULT, result, false);
+
+            player.getLevel().addLevelSoundEvent(player.getPosition(), SoundEvent.RANDOM_ANVIL_USE);
+            return true;
         }
 
         return false;
@@ -130,8 +119,11 @@ public class AnvilInventory extends FakeBlockUIComponent {
         who.resetCraftingGridType();
 
         for (int i = 0; i < 2; ++i) {
-            this.getHolder().getLevel().dropItem(this.getHolder().getPosition().toFloat().add(0.5, 0.5, 0.5), this.getItem(i));
-            this.clear(i);
+            Item drop = this.getItem(i);
+            if (!drop.isNull()) {
+                this.getHolder().getLevel().dropItem(this.getHolder().getPosition().toFloat().add(0.5, 0.5, 0.5), drop);
+                this.clear(i);
+            }
         }
     }
 

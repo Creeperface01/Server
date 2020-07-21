@@ -44,6 +44,7 @@ public abstract class Item implements Cloneable {
     private int count;
     private final List<String> lore = new ArrayList<>();
     private final Short2ObjectMap<Enchantment> enchantments = new Short2ObjectOpenHashMap<>();
+    private int repairCost = -1;
     private int damage;
     private String customName;
     private NbtMap tag = NbtMap.EMPTY;
@@ -279,6 +280,8 @@ public abstract class Item implements Cloneable {
                 this.enchantments.put(id, Enchantment.getEnchantment(id).setLevel(level, false));
             }
         });
+
+        tag.listenForInt("RepairCost", repairCost -> this.repairCost = repairCost);
     }
 
     public void saveAdditionalData(NbtMapBuilder tag) {
@@ -324,6 +327,10 @@ public abstract class Item implements Cloneable {
                         .build());
             }
             tag.putList("ench", NbtType.COMPOUND, enchantmentTags);
+        }
+
+        if (this.repairCost >= 0) {
+            tag.putInt("RepairCost", this.repairCost);
         }
     }
 
@@ -429,6 +436,14 @@ public abstract class Item implements Cloneable {
 
     public boolean isNull() {
         return this.count <= 0 || this.id == AIR;
+    }
+
+    public void setRepairCost(int repairCost) {
+        this.repairCost = repairCost;
+    }
+
+    public int getRepairCost() {
+        return repairCost;
     }
 
     final public String getName() {

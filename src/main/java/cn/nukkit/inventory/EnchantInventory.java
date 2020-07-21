@@ -11,8 +11,8 @@ import cn.nukkit.player.Player.CraftingType;
  */
 public class EnchantInventory extends FakeBlockUIComponent {
 
-    public EnchantInventory(PlayerUIInventory playerUI, Block block) {
-        super(playerUI, InventoryType.ENCHANT_TABLE, 14, block);
+    public EnchantInventory(Player player, Block block) {
+        super(player, InventoryType.ENCHANT_TABLE, 14, block);
     }
 
     @Override

@@ -1,20 +1,20 @@
 package cn.nukkit.inventory;
 
-import cn.nukkit.item.Item;
+import cn.nukkit.Server;
 import cn.nukkit.player.Player;
+import com.nukkitx.protocol.bedrock.BedrockPacket;
+import com.nukkitx.protocol.bedrock.data.inventory.ContainerId;
+import com.nukkitx.protocol.bedrock.packet.InventorySlotPacket;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.HashMap;
 
 public class PlayerUIComponent extends BaseInventory {
-    private final PlayerUIInventory playerUI;
+
     private final int offset;
     private final int size;
 
-    PlayerUIComponent(PlayerUIInventory playerUI, int offset, int size) {
-        super(playerUI.holder, InventoryType.UI, Collections.emptyMap(), size);
-        this.playerUI = playerUI;
+    PlayerUIComponent(Player player, int offset, int size) {
+        super(player, InventoryType.UI, new HashMap<>(), size);
         this.offset = offset;
         this.size = size;
     }
@@ -22,6 +22,10 @@ public class PlayerUIComponent extends BaseInventory {
     @Override
     public int getSize() {
         return size;
+    }
+
+    public int getOffset() {
+        return offset;
     }
 
     @Override
@@ -40,42 +44,31 @@ public class PlayerUIComponent extends BaseInventory {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public Item getItem(int index) {
-        return this.playerUI.getItem(index + this.offset);
-    }
-
-    @Override
-    public boolean setItem(int index, Item item, boolean send) {
-        return this.playerUI.setItem(index + this.offset, item, send);
-    }
-
-    @Override
-    public Map<Integer, Item> getContents() {
-        Map<Integer, Item> contents = playerUI.getContents();
-        contents.keySet().removeIf(slot -> slot < offset || slot > offset + size);
-        return contents;
-    }
-
 
     @Override
     public void sendContents(Player... players) {
-        this.playerUI.sendContents(players);
+        BedrockPacket[] packets = new BedrockPacket[size];
+
+        for (int i = 0; i < size; i++) {
+            InventorySlotPacket pk = new InventorySlotPacket();
+            pk.setContainerId(ContainerId.UI);
+            pk.setSlot(i + offset);
+            pk.setItem(getItem(i).toNetwork());
+
+            packets[i] = pk;
+        }
+
+        Server.broadcastPackets(players, packets);
     }
 
     @Override
     public void sendSlot(int index, Player... players) {
-        playerUI.sendSlot(index + this.offset, players);
-    }
+        InventorySlotPacket pk = new InventorySlotPacket();
+        pk.setContainerId(ContainerId.UI);
+        pk.setSlot(index + offset);
+        pk.setItem(getItem(index).toNetwork());
 
-    @Override
-    public Set<Player> getViewers() {
-        return playerUI.viewers;
-    }
-
-    @Override
-    public InventoryType getType() {
-        return playerUI.type;
+        Server.broadcastPackets(players, new BedrockPacket[]{pk});
     }
 
     @Override
@@ -96,10 +89,5 @@ public class PlayerUIComponent extends BaseInventory {
     @Override
     public void onClose(Player who) {
 
-    }
-
-    @Override
-    public void onSlotChange(int index, Item before, boolean send) {
-        this.playerUI.onSlotChange(index + this.offset, before, send);
     }
 }

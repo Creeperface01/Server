@@ -1,16 +1,18 @@
 package cn.nukkit.inventory;
 
+import cn.nukkit.player.Player;
+
 /**
  * author: MagicDroidX
  * Nukkit Project
  */
 public class CraftingGrid extends PlayerUIComponent {
 
-    CraftingGrid(PlayerUIInventory playerUI) {
-        this(playerUI, 28, 4);
+    CraftingGrid(Player player) {
+        this(player, 28, 4);
     }
 
-    CraftingGrid(PlayerUIInventory playerUI, int offset, int size) {
-        super(playerUI, offset, size);
+    CraftingGrid(Player player, int offset, int size) {
+        super(player, offset, size);
     }
 }

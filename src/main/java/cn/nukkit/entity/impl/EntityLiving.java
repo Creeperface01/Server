@@ -181,7 +181,7 @@ public abstract class EntityLiving extends BaseEntity implements EntityDamageabl
         this.server.getPluginManager().callEvent(ev);
 
         if (this.getLevel().getGameRules().get(GameRules.DO_ENTITY_DROPS)) {
-            for (cn.nukkit.item.Item item : ev.getDrops()) {
+            for (Item item : ev.getDrops()) {
                 this.getLevel().dropItem(this.getPosition(), item);
             }
         }

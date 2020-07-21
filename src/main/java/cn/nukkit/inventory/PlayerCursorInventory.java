@@ -6,11 +6,12 @@ import cn.nukkit.player.Player;
  * @author CreeperFace
  */
 public class PlayerCursorInventory extends PlayerUIComponent {
-    private final PlayerUIInventory playerUI;
 
-    PlayerCursorInventory(PlayerUIInventory playerUI) {
-        super(playerUI, 0, 1);
-        this.playerUI = playerUI;
+    private final Player player;
+
+    PlayerCursorInventory(Player player) {
+        super(player, 0, 1);
+        this.player = player;
     }
 
     /**
@@ -20,6 +21,6 @@ public class PlayerCursorInventory extends PlayerUIComponent {
      */
     @Override
     public Player getHolder() {
-        return playerUI.getHolder();
+        return player;
     }
 }

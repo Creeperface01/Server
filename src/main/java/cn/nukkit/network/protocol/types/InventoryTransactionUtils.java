@@ -1,9 +1,6 @@
 package cn.nukkit.network.protocol.types;
 
-import cn.nukkit.inventory.AnvilInventory;
-import cn.nukkit.inventory.BeaconInventory;
-import cn.nukkit.inventory.EnchantInventory;
-import cn.nukkit.inventory.Inventory;
+import cn.nukkit.inventory.*;
 import cn.nukkit.inventory.transaction.action.*;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemIds;
@@ -104,6 +101,8 @@ public class InventoryTransactionUtils {
 
         switch (source.getType()) {
             case CONTAINER:
+                Inventory window;
+
                 if (containerId == ContainerId.ARMOR) {
                     //TODO: HACK!
                     slot += 36;
@@ -113,7 +112,20 @@ public class InventoryTransactionUtils {
                     containerId = ContainerId.INVENTORY;
                 }
 
-                Inventory window = player.getWindowById(containerId);
+                if (containerId == ContainerId.UI) {
+                    window = player.getUIInventory().getBySlot(slot);
+                } else {
+                    window = player.getWindowById(containerId);
+                }
+
+                if (window instanceof PlayerUIComponent) {
+                    slot -= ((PlayerUIComponent) window).getOffset();
+
+                    if (window instanceof AnvilInventory) {
+                        oldItem = window.getItem(slot);
+                    }
+                }
+
                 if (window != null) {
                     return new SlotChangeAction(window, slot, oldItem, newItem);
                 }
@@ -163,7 +175,7 @@ public class InventoryTransactionUtils {
                         return new CraftingTransferMaterialAction(oldItem, newItem, slot);
                 }
 
-                if (containerId >= SOURCE_TYPE_ANVIL_OUTPUT && containerId <= SOURCE_TYPE_ANVIL_INPUT) { //anvil actions
+                if (containerId == SOURCE_TYPE_ANVIL_RESULT || containerId == SOURCE_TYPE_ANVIL_INPUT) { //anvil actions
                     Inventory inv = player.getWindowById(ContainerIds.ANVIL);
 
                     if (!(inv instanceof AnvilInventory)) {
@@ -172,30 +184,15 @@ public class InventoryTransactionUtils {
                     }
                     AnvilInventory anvil = (AnvilInventory) inv;
 
-                    switch (containerId) {
-                        case SOURCE_TYPE_ANVIL_INPUT:
-                            //System.out.println("action input");
-                            slot = 0;
-                            return new SlotChangeAction(anvil, slot, oldItem, newItem);
-                        case SOURCE_TYPE_ANVIL_MATERIAL:
-                            //System.out.println("material");
-                            slot = 1;
-                            return new SlotChangeAction(anvil, slot, oldItem, newItem);
-                        case SOURCE_TYPE_ANVIL_OUTPUT:
-                            //System.out.println("action output");
-                            break;
-                        case SOURCE_TYPE_ANVIL_RESULT:
-                            slot = 2;
-                            anvil.clear(0);
-                            Item material = anvil.getItem(1);
-                            if (!material.isNull()) {
-                                material.setCount(material.getCount() - 1);
-                                anvil.setItem(1, material);
-                            }
-                            anvil.setItem(2, oldItem);
-                            //System.out.println("action result");
-                            return new SlotChangeAction(anvil, slot, oldItem, newItem);
-                    }
+//                    switch (containerId) {
+//                        case SOURCE_TYPE_ANVIL_RESULT:
+//                            if (anvil.calculateResult(player, oldItem)) {
+//                                return new SlotChangeAction(anvil, slot, oldItem, newItem);
+//                            }
+//                            break;
+//                        case SOURCE_TYPE_ANVIL_INPUT:
+//                            return new SlotChangeAction(anvil, 2, oldItem, newItem);
+//                    }
                 }
 
                 if (containerId >= SOURCE_TYPE_ENCHANT_OUTPUT && containerId <= SOURCE_TYPE_ENCHANT_INPUT) {

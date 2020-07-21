@@ -58,7 +58,7 @@ public class BlockBeacon extends BlockTransparent {
                 BlockEntityRegistry.get().newEntity(BEACON, this.getChunk(), this.getPosition());
             }
 
-            player.addWindow(new BeaconInventory(player.getUIInventory(), this), ContainerIds.BEACON);
+            player.addWindow(new BeaconInventory(player, this), ContainerIds.BEACON);
         }
         return true;
     }

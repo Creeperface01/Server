@@ -144,7 +144,7 @@ public class Player extends Human implements CommandSender, InventoryHolder, Chu
 
     public CraftingType craftingType = CraftingType.SMALL;
 
-    protected PlayerUIInventory playerUIInventory;
+    protected PlayerUI playerUI;
     protected CraftingGrid craftingGrid;
     protected CraftingTransaction craftingTransaction;
 
@@ -2850,21 +2850,20 @@ public class Player extends Human implements CommandSender, InventoryHolder, Chu
     protected void addDefaultWindows() {
         this.addWindow(this.getInventory(), (byte) ContainerId.INVENTORY, true);
 
-        this.playerUIInventory = new PlayerUIInventory(this);
-        this.addWindow(this.playerUIInventory, (byte) ContainerId.UI, true);
+        this.playerUI = new PlayerUI(this);
+        this.playerUI.addDefaultWindows();
 
-        this.craftingGrid = this.playerUIInventory.getCraftingGrid();
-        this.addWindow(this.craftingGrid, (byte) ContainerId.NONE);
+        this.craftingGrid = this.playerUI.getCraftingGrid();
 
         //TODO: more windows
     }
 
-    public PlayerUIInventory getUIInventory() {
-        return playerUIInventory;
+    public PlayerUI getUIInventory() {
+        return playerUI;
     }
 
     public PlayerCursorInventory getCursorInventory() {
-        return this.playerUIInventory.getCursorInventory();
+        return this.playerUI.getCursorInventory();
     }
 
     public CraftingTransaction getCraftingTransaction() {
@@ -2901,10 +2900,10 @@ public class Player extends Human implements CommandSender, InventoryHolder, Chu
                 }
             }
 
-            this.playerUIInventory.clearAll();
+            this.craftingGrid.clearAll();
 
             if (this.craftingGrid instanceof BigCraftingGrid) {
-                this.craftingGrid = this.playerUIInventory.getCraftingGrid();
+                this.craftingGrid = this.playerUI.getCraftingGrid();
                 this.addWindow(this.craftingGrid, (byte) ContainerId.NONE);
 //
 //                ContainerClosePacket pk = new ContainerClosePacket(); //be sure, big crafting is really closed

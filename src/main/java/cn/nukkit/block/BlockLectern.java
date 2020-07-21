@@ -194,7 +194,7 @@ public class BlockLectern extends BlockTransparent implements Faceable {
         if (blockEntity instanceof Lectern) {
             Lectern lectern = (Lectern) blockEntity;
             Item book = lectern.getBook();
-            if (book.getId() != BlockIds.AIR) {
+            if (book != null && !book.isNull()) {
                 LecternDropBookEvent dropBookEvent = new LecternDropBookEvent(player, lectern, book);
                 this.getLevel().getServer().getPluginManager().callEvent(dropBookEvent);
                 if (!dropBookEvent.isCancelled()) {

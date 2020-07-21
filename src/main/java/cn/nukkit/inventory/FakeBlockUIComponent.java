@@ -12,8 +12,8 @@ import com.nukkitx.protocol.bedrock.packet.ContainerOpenPacket;
 public class FakeBlockUIComponent extends PlayerUIComponent {
     private final InventoryType type;
 
-    FakeBlockUIComponent(PlayerUIInventory playerUI, InventoryType type, int offset, Block block) {
-        super(playerUI, offset, type.getDefaultSize());
+    FakeBlockUIComponent(Player player, InventoryType type, int offset, Block block) {
+        super(player, offset, type.getDefaultSize());
         this.type = type;
         this.holder = new FakeBlockMenu(this, block);
     }
@@ -50,9 +50,9 @@ public class FakeBlockUIComponent extends PlayerUIComponent {
         ContainerOpenPacket packet = new ContainerOpenPacket();
         packet.setId(who.getWindowId(this));
         packet.setType(ContainerType.from(type.getNetworkType()));
-        InventoryHolder holder = this.getHolder();
+        FakeBlockMenu holder = this.getHolder();
         if (holder != null) {
-            packet.setBlockPosition(((FakeBlockMenu) holder).getPosition());
+            packet.setBlockPosition(holder.getPosition());
         } else {
             packet.setBlockPosition(Vector3i.ZERO);
         }

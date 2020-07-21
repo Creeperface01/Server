@@ -8,8 +8,8 @@ import cn.nukkit.player.Player;
  */
 public class BeaconInventory extends FakeBlockUIComponent {
 
-    public BeaconInventory(PlayerUIInventory playerUI, Block block) {
-        super(playerUI, InventoryType.BEACON, 27, block);
+    public BeaconInventory(Player player, Block block) {
+        super(player, InventoryType.BEACON, 27, block);
     }
 
     @Override
